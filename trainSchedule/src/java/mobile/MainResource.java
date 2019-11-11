@@ -65,6 +65,7 @@ public class MainResource {
         throw new UnsupportedOperationException();
     }
     
+    //http://192.168.2.164:8080/trainSchedule/webresources/main/listUsers
     @GET
     @Path("listUsers")
     @Produces("application/json")
@@ -115,6 +116,54 @@ public class MainResource {
         return mainArray.toString();
     }
 
+    //http://192.168.2.164:8080/trainSchedule/webresources/main/listUsers
+    @GET
+    @Path("singleUser&{id}")
+    @Produces("application/json")
+    public String getText(@PathParam("id") int id) {
+       
+        mainObject.accumulate("Status", "Error");
+        mainObject.accumulate("Message", "User doesn't exists");        
+       
+        try {
+       
+            stm = con.createStatement();
+            String sql = "select * from users where id =" + id;
+            rs = stm.executeQuery(sql);
+
+
+            String fname, lname, email, password, phone;
+            
+
+            while (rs.next()) {
+                mainObject.clear();
+                id = rs.getInt("id");
+                password = rs.getString("password");
+                fname = rs.getString("firstname");
+                lname = rs.getString("lastname");
+                email = rs.getString("email");
+                phone = rs.getString("phonenumber");
+               
+
+                mainObject.accumulate("id", id);
+                mainObject.accumulate("password", password);
+                mainObject.accumulate("fname", fname);
+                mainObject.accumulate("lname", lname);
+                mainObject.accumulate("email", email);
+                mainObject.accumulate("phone", phone);
+              
+                
+                
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            closeDBConnection(rs, stm, con);
+            }
+        return mainObject.toString();
+    }
    
      private void closeDBConnection(ResultSet rs, Statement stm, Connection con) {
         if (rs != null) {
