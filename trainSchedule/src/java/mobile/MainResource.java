@@ -116,7 +116,7 @@ public class MainResource {
         return mainArray.toString();
     }
 
-    //http://192.168.2.164:8080/trainSchedule/webresources/main/listUsers
+    //http://192.168.2.164:8080/trainSchedule/webresources/main/singleUser&1105
     @GET
     @Path("singleUser&{id}")
     @Produces("application/json")
