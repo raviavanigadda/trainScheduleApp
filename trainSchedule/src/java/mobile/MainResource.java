@@ -57,129 +57,19 @@ public class MainResource {
         }
     }
 
-    /**
-     * Retrieves representation of an instance of mobile.MainResource
-     * @return an instance of java.lang.String
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getJson() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
-    }
-    
-    //http://192.168.2.164:8080/trainSchedule/webresources/main/listUsers
-    @GET
-    @Path("listUsers")
-    @Produces("application/json")
-    public String getText() {
-       
-        mainObject.accumulate("Status", "Error");
-        mainObject.accumulate("Message", "User doesn't exists");        
-       
-        try {
-       
-            stm = con.createStatement();
-            String sql = "select * from users";
-            rs = stm.executeQuery(sql);
-
-            int id;
-            String fname, lname, email, password, phone;
-            
-
-            while (rs.next()) {
-                mainObject.clear();
-                id = rs.getInt("id");
-                password = rs.getString("password");
-                fname = rs.getString("firstname");
-                lname = rs.getString("lastname");
-                email = rs.getString("email");
-                phone = rs.getString("phonenumber");
-               
-
-                mainObject.accumulate("id", id);
-                mainObject.accumulate("password", password);
-                mainObject.accumulate("fname", fname);
-                mainObject.accumulate("lname", lname);
-                mainObject.accumulate("email", email);
-                mainObject.accumulate("phone", phone);
-              
-                mainArray.add(mainObject);
-               
-                mainObject.clear();
-                
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            closeDBConnection(rs, stm, con);
-            }
-        return mainArray.toString();
-    }
-
-    //http://192.168.2.164:8080/trainSchedule/webresources/main/singleUser&1105
-    @GET
-    @Path("singleUser&{id}")
-    @Produces("application/json")
-    public String getText1(@PathParam("id") int id) {
-       
-        mainObject.accumulate("Status", "Error");
-        mainObject.accumulate("Message", "User doesn't exists");        
-       
-        try {
-       
-            stm = con.createStatement();
-            String sql = "select * from users where id =" + id;
-            rs = stm.executeQuery(sql);
-
-
-            String fname, lname, email, password, phone;
-            
-
-            while (rs.next()) {
-                mainObject.clear();
-                id = rs.getInt("id");
-                password = rs.getString("password");
-                fname = rs.getString("firstname");
-                lname = rs.getString("lastname");
-                email = rs.getString("email");
-                phone = rs.getString("phonenumber");
-               
-
-                mainObject.accumulate("id", id);
-                mainObject.accumulate("password", password);
-                mainObject.accumulate("fname", fname);
-                mainObject.accumulate("lname", lname);
-                mainObject.accumulate("email", email);
-                mainObject.accumulate("phone", phone);
-              
-                
-                
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            closeDBConnection(rs, stm, con);
-            }
-        return mainObject.toString();
-    }
-   
+     
     //Query 4 by - 1895212 - Sai Ravi Teja A
     //http://192.168.2.164:8080/trainSchedule/webresources/main/viewTrainRoutes&100
     //gets list of stations where each train will stop 
     @GET
     @Path("viewTrainRoutes&{id}")
     @Produces("application/json")
-    public String getText2(@PathParam("id") int id) {
+    public String getText4(@PathParam("id") int id) {
 
         try {
        
             stm = con.createStatement();
-            String sql = "select distinct(r.routename), s.stationname from route r, train t, station s, details d where r.TRAINID = "+id+" and d.STATIONID = s.ID" ;
+            String sql = "select distinct(r.routename), s.stationname from route r, train t, station s, details d where r.TRAINID = "+id+" and d.STATIONID = s.ID";
             rs = stm.executeQuery(sql);
            
             String routeName, stationName;
@@ -217,42 +107,55 @@ public class MainResource {
             }
           return mainObject.toString();
     }
-   
-     //Query by - 1895212 - Sai Ravi Teja A
-    //http://192.168.2.164:8080/trainSchedule/webresources/main/viewTrainRoutes&100
-    //gets list of stations where each train will stop 
+    
+   //Query 6 by - 1895212 - Sai Ravi Teja A
+    //http://192.168.2.164:8080/trainSchedule/webresources/main/showBookingHistory&1115
+    //gets Booking history of a particular user
     @GET
-    @Path("viewTrainRoutes&{id}")
+    @Path("showBookingHistory&{id}")
     @Produces("application/json")
-    public String getText3(@PathParam("id") int id) {
+    public String getText6(@PathParam("id") int id) {
 
         try {
-       
+
             stm = con.createStatement();
-            String sql = "select distinct(r.routename), s.stationname from route r, train t, station s, details d where r.TRAINID = "+id+" and d.STATIONID = s.ID" ;
+            String sql = "select u.firstname, u.lastname, b.noofplaces, b.BOOKINGDATE, r.routename, s.stationname from users u inner join booking b on b.USERID =u.ID inner join route r on r.ID = b.ROUTEID inner join details d on d.ROUTEID = r.ID inner join station s on s.ID = d.STATIONID where u.ID ="+id;
             rs = stm.executeQuery(sql);
            
-            String routeName, stationName;
+            String firstName, lastName, bookDate, routeName, stationName;
+            int noPlaces; 
  
             if(rs.next()) {
                 do {
                 mainObject.clear();
+                
                 routeName = rs.getString("routename");
                 stationName = rs.getString("stationname");
+                firstName = rs.getString("firstname");
+                lastName = rs.getString("lastname");
+                bookDate = rs.getString("bookdate");
+                noPlaces = rs.getInt("noofplaces");
+                
                 mainObject.accumulate("Status","OK");
                 mainObject.accumulate("Timestamp",now);
-                mainObject.accumulate("Route Name: ", routeName);
+                mainObject.accumulate("First Name", firstName);
+                mainObject.accumulate("Last Name", lastName);
+                mainObject.accumulate("No of places", noPlaces);
+                mainObject.accumulate("Booking Date", bookDate);
+                mainObject.accumulate("Route Name", routeName);
                 mainObject.accumulate("Station Name", stationName);
+               
                 mainArray.add(mainObject);
+                
             }while (rs.next());
             return mainArray.toString();
             }
             else
-                {
+            {
             mainObject.accumulate("Status","FAILED");
             mainObject.accumulate("Timestamp",now); 
             mainObject.accumulate("TrainID",id);
-            mainObject.accumulate("Message","Train details are not found. Please try again");
+            mainObject.accumulate("Message","Booking details are not found. Please try again");
             }
     
         } catch (SQLException ex) {
@@ -266,7 +169,10 @@ public class MainResource {
             closeDBConnection(rs, stm, con);
             }
           return mainObject.toString();
-    }
+    } 
+    
+    
+    
      private void closeDBConnection(ResultSet rs, Statement stm, Connection con) {
         if (rs != null) {
             try {
