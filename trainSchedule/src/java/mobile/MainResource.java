@@ -379,30 +379,29 @@ public class MainResource {
     //should modify
     //Query 6 by - 1895212 - Shriya
     //localhost:8080/trainSchedule/webresources/main/createAccount&1210&bhari&rathy&anypw&b.ava@gmail.com&4388752231
-    //sign up for app. 
+    //ChangePassword 
     @GET
-    @Path("updateProfile&{id}&{email}&{password}&{phonenumber}")
+    @Path("forgetPassword&{id}&{email}&{password}")
     @Produces("application/json")
-    public String getText6(@PathParam("id") int id,@PathParam("email") String email,@PathParam("password") String password,@PathParam("phonenumber") String phonenumber) {
+    public String getText6(@PathParam("id") int id,@PathParam("email") String email,@PathParam("password") String password) {
 
         try {
             
-            String sql = "insert into users values(?,?,?,?,?,?)";
+            String sql = "update users set email=?,password=? where id=?";
            
             ps = con.prepareStatement(sql);
-            ps.setInt(1,id);
-            ps.setString(2,firstName);
-            ps.setString(3,lastName);
-            ps.setString(4,password);
-            ps.setString(5,email);
-            ps.setString(6,phoneNumber);
+        
+            ps.setString(1,email);
+            ps.setString(2,password);
+            ps.setInt(3, id);
                  
             int flag = ps.executeUpdate();
                 
             if(flag == 1) {
+                
             mainObject.accumulate("Status","OK");
             mainObject.accumulate("Timestamp",now);
-            mainObject.accumulate("Message","Account created successfully. Please login now.");
+            mainObject.accumulate("Message","Profile sucessfully updated.");
             }
             else
             {
@@ -414,7 +413,7 @@ public class MainResource {
             
                 mainObject.accumulate("Status","ERROR_DB");
                 mainObject.accumulate("Timestamp",now);
-                mainObject.accumulate("Message","Account already exists. Please try again.");
+                mainObject.accumulate("Message","Database issues. Please try again.");
                 
             Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -450,10 +449,3 @@ public class MainResource {
      
 
 }
-
-/*select u.firstname, u.lastname, b.noofplaces, b.BOOKINGDATE, r.routename, s.stationname
-from users u inner join booking b on b.USERID =u.ID
-inner join route r on r.ID = b.ROUTEID
-inner join details d on d.ROUTEID = r.ID
-inner join station s on s.ID = d.STATIONID
-where u.ID = 1125;*/
