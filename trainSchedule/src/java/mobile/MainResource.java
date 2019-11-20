@@ -83,8 +83,8 @@ public class MainResource {
                if(flag!=1)
                 {
               
-                initialObject.accumulate("Status: ","OK");
-                initialObject.accumulate("Timestamp: ",now);
+                initialObject.accumulate("Status","OK");
+                initialObject.accumulate("Timestamp",now);
                 
                 }
                do {
@@ -105,7 +105,7 @@ public class MainResource {
                 mainObject.clear();
             }while (rs.next());
           
-               initialObject.accumulate("Train Schedule: ", mainArray);
+               initialObject.accumulate("Train Schedule", mainArray);
             }
            
         } catch (SQLException ex) {
@@ -150,8 +150,10 @@ public class MainResource {
             if(rs.next()) {
                 if(flag!=1)
                 {
+                    
                 initialObject.accumulate("Status","OK");
                 initialObject.accumulate("Timestamp",now);
+                
                 }
                 do {
                 routeName = rs.getString("routename");
@@ -162,6 +164,7 @@ public class MainResource {
                 
                 mainArray.add(mainObject);
                 mainObject.clear();
+                
             }while (rs.next());
                 initialObject.accumulate("Route Information", mainArray);
             }
@@ -196,7 +199,6 @@ public class MainResource {
     @Path("showBookingHistory&{id}")
     @Produces("application/json")
     public String getText3(@PathParam("id") int id) {
-
         try {
 
             stm = con.createStatement();
@@ -210,6 +212,7 @@ public class MainResource {
             {
                 if(flag!=1)
                 {
+                    
                 initialObject.accumulate("Status: ","OK");
                 initialObject.accumulate("Timestamp: ",now);
                 
@@ -218,6 +221,7 @@ public class MainResource {
                 
                 initialObject.accumulate("First Name", firstName);
                 initialObject.accumulate("Last Name", lastName);
+                
                 }
                 do {
                 
@@ -235,7 +239,7 @@ public class MainResource {
                 mainObject.clear();
             }while (rs.next());
             
-            initialObject.accumulate("Booking History: ", mainArray);
+            initialObject.accumulate("Booking History", mainArray);
            }
     
         } catch (SQLException ex) {
@@ -297,13 +301,13 @@ public class MainResource {
                 mainObject.accumulate("Train Name", trainName);
                 mainObject.accumulate("Arrival Time", arrivalTime);
                 mainObject.accumulate("Departure Time", departureTime);
-                mainObject.accumulate("Route Name: ", routeName);
+                mainObject.accumulate("Route Name", routeName);
             
                 mainArray.add(mainObject);
                 mainObject.clear();
             }
                 while (rs.next());
-                initialObject.accumulate("Station Schedule: ", mainArray);
+                initialObject.accumulate("Station Schedule", mainArray);
             }
             
         } catch (SQLException ex) {
@@ -376,29 +380,27 @@ public class MainResource {
           return mainObject.toString();
     }
     
-    //should modify
     //Query 6 by - 1895212 - Shriya
-    //localhost:8080/trainSchedule/webresources/main/createAccount&1210&bhari&rathy&anypw&b.ava@gmail.com&4388752231
+    //localhost:8080/trainSchedule/webresources/main/forgetPassword&1160&anyp1234
     //ChangePassword 
     @GET
-    @Path("forgetPassword&{id}&{email}&{password}")
+    @Path("forgetPassword&{id}&{password}")
     @Produces("application/json")
-    public String getText6(@PathParam("id") int id,@PathParam("email") String email,@PathParam("password") String password) {
+    public String getText6(@PathParam("id") int id,@PathParam("password") String password) {
 
         try {
             
-            String sql = "update users set email=?,password=? where id=?";
+            String sql = "update users set password=? where id=?";
            
             ps = con.prepareStatement(sql);
         
-            ps.setString(1,email);
-            ps.setString(2,password);
-            ps.setInt(3, id);
+        
+            ps.setString(1,password);
+            ps.setInt(2, id);
                  
             int flag = ps.executeUpdate();
                 
             if(flag == 1) {
-                
             mainObject.accumulate("Status","OK");
             mainObject.accumulate("Timestamp",now);
             mainObject.accumulate("Message","Profile sucessfully updated.");
@@ -410,10 +412,125 @@ public class MainResource {
             mainObject.accumulate("Message","Wrong data entered. Please try again.");
             }
         } catch (SQLException ex) {
-            
                 mainObject.accumulate("Status","ERROR_DB");
                 mainObject.accumulate("Timestamp",now);
                 mainObject.accumulate("Message","Database issues. Please try again.");
+            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            closeDBConnection(rs, stm, con);
+            }
+        
+          return mainObject.toString();
+    }
+    
+    //Query 7 by - 1895212 - Sai Ravi Teja A
+    //http://localhost:8080/trainSchedule/webresources/main/trainReservationChart&100
+    //Availability of seats
+    @GET
+    @Path("trainReservationChart&{trainID}")
+    @Produces("application/json")
+    public String getText7(@PathParam("trainID") int trainID) {
+
+        try {
+       
+            stm = con.createStatement();
+            String sql = "select distinct u.FIRSTNAME,u.LASTNAME,u.EMAIL,u.PHONENUMBER,b.NOOFPLACES from users u, booking b, station s, route r, details d, train t where b.USERID = u.ID and b.ROUTEID=r.ID and d.STATIONID = s.ID and d.ROUTEID = r.ID and t.ID = r.TRAINID and t.ID ="+trainID;
+            rs = stm.executeQuery(sql);
+           
+           
+            String firstName,lastName,email,phoneno;
+            int noofplaces;
+            
+            int flag = 0;
+            if(rs.next()) {
+                if(flag!=1)
+                {
+                initialObject.accumulate("Status","OK");
+                initialObject.accumulate("Timestamp",now);
+                initialObject.accumulate("TrainID", trainID);
+                }
+                do {
+                    
+                firstName = rs.getString("firstname");
+                lastName = rs.getString("lastname");
+                email = rs.getString("email");
+                phoneno = rs.getString("phonenumber");
+                noofplaces = rs.getInt("noofplaces");
+                
+                mainObject.accumulate("First Name", firstName);
+                mainObject.accumulate("Last Name", lastName);
+                mainObject.accumulate("Email", email);
+                mainObject.accumulate("Phone number", phoneno);
+                mainObject.accumulate("No of seats", noofplaces);
+                
+                mainArray.add(mainObject);
+                mainObject.clear();
+            }
+                while (rs.next());
+                initialObject.accumulate("Train Reservation Chart", mainArray);
+            }
+            
+        } catch (SQLException ex) {
+                mainObject.accumulate("Status","ERROR_DB");
+                mainObject.accumulate("Timestamp",now);
+                mainObject.accumulate("Message","Database Issues. Please try again");
+
+            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            closeDBConnection(rs, stm, con);
+            }
+        
+         if(initialObject.isEmpty())
+        {
+            mainObject.accumulate("Status","FAILED");
+            mainObject.accumulate("Timestamp",now); 
+            mainObject.accumulate("TrainID",trainID);
+            mainObject.accumulate("Message","No bookings made. Please Book now!");
+            
+            return mainObject.toString();
+        }
+          return initialObject.toString();
+    }
+    
+    //Query 8 by - 1895212 - Shriya
+    //localhost:8080/trainSchedule/webresources/main/createAccount&1210&bhari&rathy&anypw&b.ava@gmail.com&4388752231
+    //sign up for app. 
+    @GET
+    @Path("bookTicket&{id}&{noofplaces}&{bookingdate}&{userid}&{routeid}")
+    @Produces("application/json")
+    public String getText8(@PathParam("id") int id,@PathParam("noofplaces") int noofplaces,@PathParam("bookingdate") String bookingDate,@PathParam("userid") int userID,@PathParam("routeid") int routeID) {
+
+        try {
+            String sql = "insert into booking values(?,?,?,?,?)";
+           
+            ps = con.prepareStatement(sql);
+           
+            ps.setInt(1,id);
+            ps.setInt(2,noofplaces);
+            ps.setString(3,bookingDate);
+            ps.setInt(4,userID);
+            ps.setInt(5,routeID);
+                           
+            int flag = ps.executeUpdate();
+                
+            if(flag == 1) {
+            mainObject.accumulate("Status","OK");
+            mainObject.accumulate("Timestamp",now);
+            mainObject.accumulate("Message","Ticket booked Successfully. Check booking history for more details.");
+            }
+            else
+            {
+            mainObject.accumulate("Status","FAILED");
+            mainObject.accumulate("Timestamp",now);
+            mainObject.accumulate("Message","Wrong data entered. Please try again.");
+            }
+        } catch (SQLException ex) {
+            
+                mainObject.accumulate("Status","ERROR_DB");
+                mainObject.accumulate("Timestamp",now);
+                mainObject.accumulate("Message","Server issues. Please try again later.");
                 
             Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
         }
