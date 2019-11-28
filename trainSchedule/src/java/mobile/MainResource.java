@@ -334,7 +334,7 @@ public class MainResource {
             mainObject.accumulate("Status","FAILED");
             mainObject.accumulate("Timestamp",now); 
             mainObject.accumulate("Station ID",id);
-            mainObject.accumulate("Message","Station schedule is not yet ready. Please try again later.");
+            mainObject.accumulate("Message","Station schedule is not available. Please try again later.");
             
             return mainObject.toString();
         }
@@ -342,46 +342,49 @@ public class MainResource {
     }
     
     //Query 5
-    //http://localhost:8080/trainSchedule/webresources/main/signUp&1210&bhari&rathy&anypw&b.ava@gmail.com&4388752231
-    //sign up for app. 
+    //http://localhost:8080/trainSchedule/webresources/main/updateProfile&1125&Dielle&phemton&anypw&dielphe@gmam&4355534433
+    //Update profile 
     @GET
-    @Path("signUp&{id}&{firstname}&{lastname}&{password}&{email}&{phonenumber}")
+    @Path("updateProfile&{id}&{firstname}&{lastname}&{password}&{email}&{phonenumber}")
     @Produces("application/json")
     public String getText5(@PathParam("id") int id,@PathParam("firstname") String firstName,@PathParam("lastname") String lastName,@PathParam("password") String password,@PathParam("email") String email,@PathParam("phonenumber") String phoneNumber) {
 
         try {
-            String sql = "insert into users values(?,?,?,?,?,?)";
+             String sql = "update users set firstname=?, lastname =?, password= ?, email = ?, phonenumber=? where id=?";
            
             ps = con.prepareStatement(sql);
-            ps.setInt(1,id);
-            ps.setString(2,firstName);
-            ps.setString(3,lastName);
-            ps.setString(4,password);
-            ps.setString(5,email);
-            ps.setString(6,phoneNumber);
-                 
+            
+            ps.setString(1,firstName);
+            ps.setString(2,lastName);
+            ps.setString(3,email);
+            ps.setString(4,phoneNumber);  
+            ps.setString(5,password);
+            ps.setInt(6,id);
+            
             int flag = ps.executeUpdate();
                 
             if(flag == 1) {
+            
             mainObject.accumulate("Status","OK");
             mainObject.accumulate("Timestamp",now);
-            mainObject.accumulate("Message","Account created successfully. Please login now with following credentials.");
-            mainObject.accumulate("User ID",id);
-            mainObject.accumulate("Password",password);
+            mainObject.accumulate("Message","Profile settings updated successfully.");
            
             }
-            else
-            {
+           else
+            {     
             mainObject.accumulate("Status","FAILED");
             mainObject.accumulate("Timestamp",now);
             mainObject.accumulate("Message","Wrong data entered. Please try again.");
+  
             }
+            
+            
         } catch (SQLException ex) {
             
-                mainObject.accumulate("Status","ERROR_DB");
+               mainObject.accumulate("Status","ERROR_DB");
                 mainObject.accumulate("Timestamp",now);
                mainObject.accumulate("Message","Server Issues. Please try again later.");
-                
+               
             Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         finally {
@@ -506,7 +509,7 @@ public class MainResource {
     }
     
     //Query 8
-    //http://localhost:8080/trainSchedule/webresources/main/bookTicket&5230&4&1-NOV-2029&1110&24
+    //http://192.168.2.163:8080/trainSchedule/webresources/main/bookTicket&5230&4&1-NOV-2029&1110&24
     //Book Tickets
     @GET
     @Path("bookTicket&{id}&{noofplaces}&{bookingdate}&{userid}&{routeid}")
@@ -514,7 +517,7 @@ public class MainResource {
     public String getText8(@PathParam("id") int id,@PathParam("noofplaces") int noofplaces,@PathParam("bookingdate") String bookingDate,@PathParam("userid") int userID,@PathParam("routeid") int routeID) {
 
         try {
-            String sql = "insert into booking values(?,?,?,?,?)";
+           String sql = "insert into booking values(?,?,?,?,?)";
            
             ps = con.prepareStatement(sql);
            
@@ -527,12 +530,14 @@ public class MainResource {
             int flag = ps.executeUpdate();
                 
             if(flag == 1) {
+            
             mainObject.accumulate("Status","OK");
             mainObject.accumulate("Timestamp",now);
-             mainObject.accumulate("Booking ID",id);
+            mainObject.accumulate("Booking ID",id);
             mainObject.accumulate("Message","Ticket booked Successfully. Check booking history for more details.");
+            
             }
-            else
+            else if(mainObject.isEmpty())
             {
             mainObject.accumulate("Status","FAILED");
             mainObject.accumulate("Timestamp",now);
@@ -554,7 +559,7 @@ public class MainResource {
     }
     
     //Query 9
-    //http://localhost:8080/trainSchedule/webresources/main/stationsBetweenRoutes&100
+    //http://localhost:8080/trainSchedule/webresources/main/stationsBetweenRoutes&21&25
     //Search stations between routes
     @GET
     @Path("stationsBetweenRoutes&{route1}&{route2}")
@@ -621,7 +626,7 @@ public class MainResource {
           return initialObject.toString();
     }
     
-     //Query 10
+    //Query 10
     //http://localhost:8080/trainSchedule/webresources/main/seatsAvailability&2010&100 
     //Search availability of seats in particular train and station
     @GET
@@ -635,8 +640,6 @@ public class MainResource {
             String sql = "select distinct t.CAPACITY, t.COACHES from train t, route r, details d, station s where t.ID=r.TRAINID and d.ROUTEID=r.ID and d.STATIONID=s.ID and t.ID="+trainID+" and s.ID="+stationID;
             rs = stm.executeQuery(sql);
            
-           
-            
             int trainSeats,trainCoaches;
             int flag = 0;
             if(rs.next()) {
@@ -708,5 +711,4 @@ public class MainResource {
         }
     }
      
-
 }
