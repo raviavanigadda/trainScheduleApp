@@ -217,8 +217,8 @@ public class MainResource {
                 if(flag!=1)
                 {
                     
-                initialObject.accumulate("Status: ","OK");
-                initialObject.accumulate("Timestamp: ",now);
+                initialObject.accumulate("Status","OK");
+                initialObject.accumulate("Timestamp",now);
                 
                 firstName = rs.getString("firstname");
                 lastName = rs.getString("lastname");
@@ -345,12 +345,12 @@ public class MainResource {
     //http://localhost:8080/trainSchedule/webresources/main/updateProfile&1125&Dielle&phemton&anypw&dielphe@gmam&4355534433
     //Update profile 
     @GET
-    @Path("updateProfile&{id}&{firstname}&{lastname}&{password}&{email}&{phonenumber}")
+    @Path("updateProfile&{id}&{firstname}&{lastname}&{email}&{phonenumber}")
     @Produces("application/json")
-    public String getText5(@PathParam("id") int id,@PathParam("firstname") String firstName,@PathParam("lastname") String lastName,@PathParam("password") String password,@PathParam("email") String email,@PathParam("phonenumber") String phoneNumber) {
+    public String getText5(@PathParam("id") int id,@PathParam("firstname") String firstName,@PathParam("lastname") String lastName,@PathParam("email") String email,@PathParam("phonenumber") String phoneNumber) {
 
         try {
-             String sql = "update users set firstname=?, lastname =?, password= ?, email = ?, phonenumber=? where id=?";
+             String sql = "update users set firstname=?, lastname =?, email = ?, phonenumber=? where id=?";
            
             ps = con.prepareStatement(sql);
             
@@ -358,8 +358,8 @@ public class MainResource {
             ps.setString(2,lastName);
             ps.setString(3,email);
             ps.setString(4,phoneNumber);  
-            ps.setString(5,password);
-            ps.setInt(6,id);
+   
+            ps.setInt(5,id);
             
             int flag = ps.executeUpdate();
                 
@@ -416,7 +416,7 @@ public class MainResource {
             mainObject.accumulate("Status","OK");
             mainObject.accumulate("Timestamp",now);
             mainObject.accumulate("User ID",id);
-            mainObject.accumulate("Message","Password changed sucessfully. Please login with new password");
+            mainObject.accumulate("Message","Password changed sucessfully. You can now login with new password.");
             }
             else
             {
@@ -686,6 +686,56 @@ public class MainResource {
             return mainObject.toString();
         }
           return initialObject.toString();
+    }
+    
+    
+    //Query 11
+    //http://localhost:8080/trainSchedule/webresources/main/login&1105&anypw
+    //Login
+    @GET
+    @Path("login&{id}")
+    @Produces("application/json")
+    public String getText8(@PathParam("id") int userID) {
+
+        try {
+       
+            stm = con.createStatement();
+            String sql = "select password from users where id = "+userID;
+           
+            rs = stm.executeQuery(sql);
+            
+            String password =null;
+           
+           
+           if (!rs.next() ) {
+                     mainObject.accumulate("Status","Not Available");
+                } else {
+
+                    do {
+                         password = rs.getString("password");
+                      mainObject.accumulate("Status","ok");
+                      mainObject.accumulate("Password",password);
+                    } while (rs.next());
+             }
+           
+            
+        } catch (SQLException ex) {
+                mainObject.accumulate("Status","ERROR_DB");
+                mainObject.accumulate("Timestamp",now);
+                mainObject.accumulate("Message","Server Issues. Please try again later.");
+
+            Logger.getLogger(MainResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            closeDBConnection(rs, stm, con);
+            }
+        
+            if(mainObject.isEmpty())
+            {
+            mainObject.accumulate("Status","Not Available");
+            }
+         
+          return mainObject.toString();
     }
     
      private void closeDBConnection(ResultSet rs, Statement stm, Connection con) {
